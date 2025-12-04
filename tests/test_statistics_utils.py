@@ -61,6 +61,8 @@ class TestStatisticsUtils(unittest.TestCase):
         result = utils.moving_average(arr,window=2)
         expected=np.array([1.5,2.5,3.5])
         npt.assert_allclose(result,expected,rtol=1e-10, atol=1e-10)
+        self.assertEqual(expected.shape,result.shape,'Tienen la misma forma')
+
 
     def test_moving_average_raises_for_invalid_window(self):
         """Test que verifica que el método moving_average lanza un ValueError cuando
@@ -71,6 +73,15 @@ class TestStatisticsUtils(unittest.TestCase):
         - Llamar a moving_average con window=0 (valor no positivo) y verificar que se lanza un ValueError (usar self.assertRaises)
         - Llamar a moving_average con window mayor que la longitud del array y verificar que se lanza un ValueError (usar self.assertRaises)
         """
+        utils=StatisticsUtils()
+        arr=[1,2,3,4]
+        result = utils.moving_average(arr,window=0)
+        self.assertRaises(ValueError,result,-1)
+
+        result2=utils.moving_average(arr,window=len(arr)+1)
+        self.assertRaises(ValueError,result2,-1)
+
+
 
     def test_moving_average_only_accepts_1d_sequences(self):
         """Test que verifica que el método moving_average lanza un ValueError cuando
