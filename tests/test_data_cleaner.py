@@ -120,9 +120,16 @@ class TestDataCleaner(unittest.TestCase):
         """
         df=make_sample_df()
         cleaner = DataCleaner()
+        df_original=df.loc[0,"name"]
 
         result=cleaner.trim_strings(df,["name"])
-        self.assertEqual(df,result)
+        self.assertEqual(df.loc[0,"name"],df_original)
+
+        for value in df["name"]:
+            self.assertEqual(value, value.strip())
+
+        pdt.assert_series_equal(result["city"],df["city"])
+
 
 
     def test_trim_strings_raises_typeerror_for_non_string_column(self):
