@@ -147,8 +147,8 @@ class TestStatisticsUtils(unittest.TestCase):
         utils=StatisticsUtils()
         arr=[2,4,6]
         result=utils.min_max_scale(arr)
-        self.assertAlmostEqual(min(arr),0,places=7)
-        self.assertAlmostEqual(max(arr),7,places=7)
+        self.assertAlmostEqual(min(result),0,places=7)
+        self.assertAlmostEqual(max(result),1,places=7)
 
         expected=[0.0, 0.5, 1.0]
         npt.assert_allclose(result,expected,rtol=1e-10, atol=1e-10)

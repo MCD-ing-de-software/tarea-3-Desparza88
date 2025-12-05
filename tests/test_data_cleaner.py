@@ -85,7 +85,8 @@ class TestDataCleaner(unittest.TestCase):
         df=make_sample_df()
         cleaner = DataCleaner()
         result=cleaner.drop_invalid_rows(df,["name","age"])
-        self.assertEqual(result.isna().sum(),0)
+        self.assertEqual(result["name"].isna().sum(),0)
+        self.assertEqual(result["age"].isna().sum(),0)
         self.assertLess(len(result), len(df))
 
 
@@ -118,14 +119,18 @@ class TestDataCleaner(unittest.TestCase):
         - Verificar que en el DataFrame resultante los valores de "name" no tienen espacios al inicio/final (usar self.assertEqual para comparar valores específicos como strings individuales - unittest es suficiente)
         - Verificar que las columnas no especificadas (ej: "city") permanecen sin cambios (si comparas Series completas, usar pandas.testing.assert_series_equal() ya que maneja mejor los índices y tipos de Pandas; si comparas valores individuales, self.assertEqual es suficiente)
         """
-        df=make_sample_df()
+        df = make_sample_df()
+        df["name"] = df["name"].astype(str)
+
         cleaner = DataCleaner()
-        df_original=df.loc[0,"name"]
+        df_original=df.copy()
 
         result=cleaner.trim_strings(df,["name"])
-        self.assertEqual(df.loc[0,"name"],df_original)
 
-        for value in df["name"]:
+        # Verifica que df no es modificado luego de aplicar la funcion trim_strings
+        self.assertEqual(df.loc[0,"name"],df_original.loc[0,"name"])
+
+        for value in result["name"]:
             self.assertEqual(value, value.strip())
 
         pdt.assert_series_equal(result["city"],df["city"])
@@ -142,9 +147,11 @@ class TestDataCleaner(unittest.TestCase):
         - Verificar que se lanza un TypeError (usar self.assertRaises)
         """
         df=make_sample_df()
+        df["age"]=df["age"].astype("Int64")
+
         cleaner = DataCleaner()
 
-        with self.assertRaises(KeyError):
+        with self.assertRaises(TypeError):
             cleaner.trim_strings(df,["age"])
 
 
@@ -162,10 +169,10 @@ class TestDataCleaner(unittest.TestCase):
 
         df=make_sample_df()
         cleaner = DataCleaner()
-        result=cleaner.remove_outliers_iqr(df,["age"],0.5)
+        result=cleaner.remove_outliers_iqr(df,"age",0.5)
         self.assertNotIn(120,result["age"])
-        self.assertIn(25,result["age"])
-        self.assertIn(35,result["age"])
+        self.assertIn(25,result["age"].values)
+        self.assertIn(35,result["age"].values)
 
 
     def test_remove_outliers_iqr_raises_keyerror_for_missing_column(self):
@@ -181,7 +188,7 @@ class TestDataCleaner(unittest.TestCase):
         cleaner = DataCleaner()
 
         with self.assertRaises(KeyError):
-            cleaner.remove_outliers_iqr(df,["salary"])
+            cleaner.remove_outliers_iqr(df,"salary")
 
     def test_remove_outliers_iqr_raises_typeerror_for_non_numeric_column(self):
         """Test que verifica que el método remove_outliers_iqr lanza un TypeError cuando
